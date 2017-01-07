@@ -1,6 +1,7 @@
 import subprocess as sp
 import time
 import datetime
+import os
 
 def logDiff(f, previous, current):
 	f.write(str(time.time()) + ':\n')
@@ -17,6 +18,10 @@ def logDiff(f, previous, current):
 def getList(command):
 	res = sp.check_output(command).split('\n')[2:-4]
 	return [x.split()[2] for x in res if "MAC Address:" in x]
+
+if os.getuid() != 0:
+	print "Error: You must run this script as root"
+	exit()
 
 command = ["nmap", "-sP", "192.168.1.0/24"]
 logfile = open("log" + str(datetime.datetime.now()).split('.')[0] + ".txt", 'w')
