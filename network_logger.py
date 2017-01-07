@@ -16,7 +16,9 @@ def logDiff(f, previous, current):
 	f.flush()
 
 def getList(command):
+	print "Nmap -> " + str(datetime.datetime.now()).split('.')[0]
 	res = sp.check_output(command).split('\n')[2:-4]
+	print "OK"
 	return [x.split()[2] for x in res if "MAC Address:" in x]
 
 if os.getuid() != 0:
@@ -24,7 +26,9 @@ if os.getuid() != 0:
 	exit()
 
 command = ["nmap", "-sP", "192.168.1.0/24"]
-logfile = open("log" + str(datetime.datetime.now()).split('.')[0] + ".txt", 'w')
+fname = "log" + str(datetime.datetime.now()).split('.')[0] + ".txt"
+logfile = open(fname, 'w')
+print "Started logging on: " + fname
 macs = set(getList(command))
 timestep = 30
 
@@ -36,6 +40,7 @@ try:
 		macs = news
 		elapsed = int(time.time()) - start
 		if (elapsed < timestep):
+			print "Sleeping for " + str(timestep - elapsed) + "s ..."
 			time.sleep(timestep - elapsed)
 except KeyboardInterrupt:
 	print "Process stopped"
