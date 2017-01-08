@@ -21,32 +21,45 @@ def logFull(f, current):
 		f.write(mac + '\n')
 	f.flush()
 
-def getList(command):
+def logDevs(f, previous, devices):
+	for key in devices:
+		if not (key in previous):
+			f.write(key + ' ' + devices[key] + '\n')
+	f.flush()
+
+def getDevs(command):
 	print "Nmap -> " + str(datetime.datetime.now()).split('.')[0]
 	res = sp.check_output(command).split('\n')[2:-4]
+	tmp = dict()
+	for dev in res:
+		if "MAC Address:" in dev:
+			tmp[dev.split()[2]] = dev[dev.index('(') + 1:-1]
 	print "OK"
-	return [x.split()[2] for x in res if "MAC Address:" in x]
+	return tmp
 
 if os.getuid() != 0:
 	print "Error: You must run this script as root"
 	exit()
 
 command = ["nmap", "-sP", "192.168.1.0/24"]
-fname = "log" + str(datetime.datetime.now()).split('.')[0] + ".txt"
+timestamp = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+fname = "log" + timestamp + ".txt"
+fdevs = "devices" + timestamp + ".txt"
 logfile = open(fname, 'w')
+devfile = open(fdevs, 'w')
 logger = logFull
 print "Started logging on: " + fname
-macs = set(getList(command))
-logger(logfile, macs)
+macs = dict()
 timestep = 60
 
 try:
 	while True:
 		start = int(time.time())
-		news = set(getList(command))
+		news = getDevs(command)
 		#logDiff(logfile, macs, news)
 		logger(logfile, news)
-		macs = news
+		logDevs(devfile, macs, news)
+		macs.update(news)
 		elapsed = int(time.time()) - start
 		if (elapsed < timestep):
 			print "Sleeping for " + str(timestep - elapsed) + "s ..."
@@ -54,3 +67,4 @@ try:
 except KeyboardInterrupt:
 	print "Process stopped"
 	logfile.close()
+	devfile.close()
