@@ -4,7 +4,7 @@ import datetime
 import os
 
 def logDiff(f, previous, current):
-	f.write(str(time.time()) + ':\n')
+	f.write("@" + str(time.time()) + ':\n')
 	#out
 	tmp = list(previous.difference(current))
 	for mac in tmp:
@@ -30,6 +30,7 @@ fname = "log" + str(datetime.datetime.now()).split('.')[0] + ".txt"
 logfile = open(fname, 'w')
 print "Started logging on: " + fname
 macs = set(getList(command))
+logDiff(logfile, set(), macs)
 timestep = 30
 
 try:
