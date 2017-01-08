@@ -15,6 +15,12 @@ def logDiff(f, previous, current):
 		f.write("> " + mac + "\n")
 	f.flush()
 
+def logFull(f, current):
+	f.write("@" + str(time.time()) + ':\n')
+	for mac in current:
+		f.write(mac + '\n')
+	f.flush()
+
 def getList(command):
 	print "Nmap -> " + str(datetime.datetime.now()).split('.')[0]
 	res = sp.check_output(command).split('\n')[2:-4]
@@ -28,16 +34,18 @@ if os.getuid() != 0:
 command = ["nmap", "-sP", "192.168.1.0/24"]
 fname = "log" + str(datetime.datetime.now()).split('.')[0] + ".txt"
 logfile = open(fname, 'w')
+logger = logFull
 print "Started logging on: " + fname
 macs = set(getList(command))
-logDiff(logfile, set(), macs)
-timestep = 30
+logger(logfile, macs)
+timestep = 60
 
 try:
 	while True:
 		start = int(time.time())
 		news = set(getList(command))
-		logDiff(logfile, macs, news)
+		#logDiff(logfile, macs, news)
+		logger(logfile, news)
 		macs = news
 		elapsed = int(time.time()) - start
 		if (elapsed < timestep):
